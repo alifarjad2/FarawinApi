@@ -3,9 +3,9 @@ const swaggerAutogen = require('swagger-autogen')()
 
 const doc = {
     info: {
-        version: "1.0.0",
+        version: "1.1.0",
         title: "Farawin Test API",
-        description: "برای استفاده آزمایشی... \n username = mobile (regex /^09([0-9]{9})/)"
+        description: "برای استفاده آزمایشی... \n username = mobile (regex /^09([0-9]{9})$/)"
     },
     host: "",
     basePath: "/",

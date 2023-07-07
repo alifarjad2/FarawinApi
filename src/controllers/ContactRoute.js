@@ -1,21 +1,32 @@
-const express = require('express')
+const express = require("express");
 
-const router = express.Router()
+const router = express.Router();
 
-const { authenticate, getContact, sendToEita, writeFile, readFile } = require("../middlewares/auth");
+const {
+  authenticate,
+  getContact,
+  sendToEita,
+  writeFile,
+  readFile,
+  ErrorHandler,
+} = require("../middlewares/auth");
 
 const fileName = "contacts.json";
 
-router.route('/contact/jsonDelete').get((req, res, next) => {
+router.route("/contact/jsonDelete").get(
+  ErrorHandler((req, res, next) => {
     // #swagger.ignore = true
-    writeFile(fileName, "[]")
+    writeFile(fileName, "[]");
     return res.status(200).json({
-        code: "200",
-        message: 'DELETED!',
-    })
-});
+      code: "200",
+      message: "DELETED!",
+    });
+  })
+);
 
-router.route('/contact').post(authenticate, async (req, res, next) => {
+router.route("/contact").post(
+  authenticate,
+  ErrorHandler(async (req, res, next) => {
     /* 
     #swagger.tags = ['Contact']
     #swagger.summary = 'افزودن مخاطب'
@@ -31,51 +42,68 @@ router.route('/contact').post(authenticate, async (req, res, next) => {
 } */
 
     const { username, name } = req.body;
+
+    if (!username || !name)
+      return res.status(400).json({
+        code: "400",
+        message:
+          "پارامتر‌های  ورودی ارسالی ناقص می‌باشند! یک یا چند مورد را فراموش کرده اید. ",
+      });
+
     const user = req.user;
 
     //TODO REGEX DIGIT
-    if (!username.startsWith('09') || username.length != 11)
-        return res.status(400).json({
-            code: "400",
-            message: 'نام کاربری که باید شماره موبایلی 11 رقمی بوده و با 09 آغاز شود! ',
-        })
-
+    if (!username.startsWith("09") || username.length != 11)
+      return res.status(400).json({
+        code: "400",
+        message:
+          "نام کاربری که باید شماره موبایلی 11 رقمی بوده و با 09 آغاز شود! ",
+      });
 
     if (name.length < 3)
-        return res.status(400).json({
-            code: "400",
-            message: ' نام و نام‌خانوداگی باید حداقل 3 کرکتر باشد!',
-        })
+      return res.status(400).json({
+        code: "400",
+        message: " نام و نام‌خانوداگی باید حداقل 3 کرکتر باشد!",
+      });
 
     const contactList = await readFile(fileName);
-    const findContact = contactList.find(c => c.username == username && c.ref == user.username)
+    const findContact = contactList.find(
+      (c) => c.username == username && c.ref == user.username
+    );
 
     if (findContact)
-        return res.status(409).json({
-            code: '409',
-            message: 'موبایل تکراری است!',
-            contact: findContact
-        })
+      return res.status(409).json({
+        code: "409",
+        message: "موبایل تکراری است!",
+        contact: findContact,
+      });
 
     const contact = { username, name, date: new Date(), ref: user.username };
-    contactList.push(contact)
+    contactList.push(contact);
     const result = await writeFile(fileName, contactList);
-    if (!result) return res.status(500).json({
-        code: '500',
-        message: 'خطایی در سمت سرور رخ داد است!',
-    })
+    if (!result)
+      return res.status(500).json({
+        code: "500",
+        message: "خطایی در سمت سرور رخ داد است!",
+      });
 
-    sendToEita("Add_Contact", "#Add_Contact" + "\n" + `contact username: ${username}\nfor: ${user.username}`);
+    sendToEita(
+      "Add_Contact",
+      "#Add_Contact" +
+        "\n" +
+        `contact username: ${username}\nfor: ${user.username}`
+    );
 
     return res.status(200).json({
-        code: '200',
-        message: 'با موفقیت افزوده شد.',
-        contact
-    })
-
-})
-
-router.route('/contact').put(authenticate, async (req, res, next) => {
+      code: "200",
+      message: "با موفقیت افزوده شد.",
+      contact,
+    });
+  })
+);
+router.route("/contact").put(
+  authenticate,
+  ErrorHandler(async (req, res, next) => {
     /* 
     #swagger.tags = ['Contact']
     #swagger.summary = 'ویرایش مخاطب'
@@ -91,51 +119,68 @@ router.route('/contact').put(authenticate, async (req, res, next) => {
 } */
 
     const { username, name } = req.body;
+
+    if (!username || !name)
+      return res.status(400).json({
+        code: "400",
+        message:
+          "پارامتر‌های  ورودی ارسالی ناقص می‌باشند! یک یا چند مورد را فراموش کرده اید. ",
+      });
+
     const user = req.user;
 
     //TODO REGEX DIGIT
-    if (!username.startsWith('09') || username.length != 11)
-        return res.status(400).json({
-            code: "400",
-            message: 'نام کاربری که باید شماره موبایلی 11 رقمی بوده و با 09 آغاز شود! ',
-        })
-
+    if (!username.startsWith("09") || username.length != 11)
+      return res.status(400).json({
+        code: "400",
+        message:
+          "نام کاربری که باید شماره موبایلی 11 رقمی بوده و با 09 آغاز شود! ",
+      });
 
     if (name.length < 3)
-        return res.status(400).json({
-            code: "400",
-            message: ' نام و نام‌خانوداگی باید حداقل 3 کرکتر باشد!',
-        })
+      return res.status(400).json({
+        code: "400",
+        message: " نام و نام‌خانوداگی باید حداقل 3 کرکتر باشد!",
+      });
 
     const contactList = await readFile(fileName);
-    const findContact = contactList.find(c => c.username == username && c.ref == user.username)
+    const findContact = contactList.find(
+      (c) => c.username == username && c.ref == user.username
+    );
 
     if (!findContact)
-        return res.status(404).json({
-            code: '404',
-            message: 'مخاطب یافت نشد!',
-        })
+      return res.status(404).json({
+        code: "404",
+        message: "مخاطب یافت نشد!",
+      });
 
-    findContact.name = name
+    findContact.name = name;
 
     const result = await writeFile(fileName, contactList);
-    if (!result) return res.status(500).json({
-        code: '500',
-        message: 'خطایی در سمت سرور رخ داد است!',
-    })
+    if (!result)
+      return res.status(500).json({
+        code: "500",
+        message: "خطایی در سمت سرور رخ داد است!",
+      });
 
-    sendToEita("Edit_Contact", "#Edit_Contact" + "\n" + `contact username: ${username}\nfor: ${user.username}`);
+    sendToEita(
+      "Edit_Contact",
+      "#Edit_Contact" +
+        "\n" +
+        `contact username: ${username}\nfor: ${user.username}`
+    );
 
     return res.status(200).json({
-        code: '200',
-        message: 'با موفقیت ویرایش شد.',
-        contact: findContact
-    })
+      code: "200",
+      message: "با موفقیت ویرایش شد.",
+      contact: findContact,
+    });
+  })
+);
 
-})
-
-
-router.route('/contact').delete(authenticate, async (req, res, next) => {
+router.route("/contact").delete(
+  authenticate,
+  ErrorHandler(async (req, res, next) => {
     /* 
     #swagger.tags = ['Contact']
     #swagger.summary = 'حذف مخاطب'
@@ -150,57 +195,74 @@ router.route('/contact').delete(authenticate, async (req, res, next) => {
 } */
 
     const { username } = req.body;
+
+    if (!username)
+      return res.status(400).json({
+        code: "400",
+        message:
+          "پارامتر‌های  ورودی ارسالی ناقص می‌باشند! یک یا چند مورد را فراموش کرده اید. ",
+      });
+
     const user = req.user;
 
     //TODO REGEX DIGIT
-    if (!username.startsWith('09') || username.length != 11)
-        return res.status(400).json({
-            code: "400",
-            message: 'نام کاربری که باید شماره موبایلی 11 رقمی بوده و با 09 آغاز شود! ',
-        })
+    if (!username.startsWith("09") || username.length != 11)
+      return res.status(400).json({
+        code: "400",
+        message:
+          "نام کاربری که باید شماره موبایلی 11 رقمی بوده و با 09 آغاز شود! ",
+      });
 
     const contactList = await readFile(fileName);
-    const findContact = contactList.find(c => c.username == username && c.ref == user.username)
+    const findContact = contactList.find(
+      (c) => c.username == username && c.ref == user.username
+    );
 
     if (!findContact)
-        return res.status(404).json({
-            code: '404',
-            message: 'مخاطب یافت نشد!',
-        })
+      return res.status(404).json({
+        code: "404",
+        message: "مخاطب یافت نشد!",
+      });
 
+    const result = await writeFile(
+      fileName,
+      contactList.filter((c) => c !== findContact)
+    );
+    if (!result)
+      return res.status(500).json({
+        code: "500",
+        message: "خطایی در سمت سرور رخ داد است!",
+      });
 
-    const result = await writeFile(fileName, contactList.filter(c => c !== findContact))
-    if (!result) return res.status(500).json({
-        code: '500',
-        message: 'خطایی در سمت سرور رخ داد است!',
-    })
-
-    sendToEita("Delete_Contact", "#Delete_Contact" + "\n" + `contact username: ${username}\nfor: ${user.username}`);
+    sendToEita(
+      "Delete_Contact",
+      "#Delete_Contact" +
+        "\n" +
+        `contact username: ${username}\nfor: ${user.username}`
+    );
 
     return res.status(200).json({
-        code: '200',
-        message: 'با موفقیت حذف شد.',
-        contact: findContact
-    })
+      code: "200",
+      message: "با موفقیت حذف شد.",
+      contact: findContact,
+    });
+  })
+);
 
-})
-
-
-
-
-router.route('/contact').get(authenticate, async (req, res, next) => {
+router.route("/contact").get(
+  authenticate,
+  ErrorHandler(async (req, res, next) => {
     /*  
     #swagger.tags = ['Contact']
     #swagger.summary = 'گرفتن تمام مخاطبین' */
 
     const contactList = await readFile(fileName);
     return res.status(200).json({
-        code: '200',
-        message: 'با موفقیت دریافت شد.',
-        contactList
-    })
+      code: "200",
+      message: "با موفقیت دریافت شد.",
+      contactList,
+    });
+  })
+);
 
-})
-
-
-module.exports = router
+module.exports = router;

@@ -1,4 +1,4 @@
-var querystring = require('querystring');
+var querystring = require("querystring");
 
 const baseUrl = __dirname + "/";
 // const baseUrl = "/tmp/" ;
@@ -113,7 +113,7 @@ const sendToEita = (title, text) => {
     fetch("https://api.gap.im/sendMessage", {
       headers: {
         // "content-type": "application/json",
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
         token:
           "bdb5b1ea78ce19a78b0deced45adf3173bb738205f7e3c6cc0c2fd9e68805690",
       },
@@ -124,7 +124,7 @@ const sendToEita = (title, text) => {
         type: "text",
       }),
       method: "POST",
-    })
+    });
     // .then((res) => {
     //   console.log(res);
     // });
@@ -147,12 +147,20 @@ const sendToEita = (title, text) => {
         }),
         method: "POST",
       }
-    )
+    );
     // .then((res) => {
     //   console.log("send");
     // });
   } catch (e) {
     console.log(e);
+  }
+};
+
+const ErrorHandler = (func) => async (req, res, next) => {
+  try {
+    await func(req, res, next);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -164,4 +172,5 @@ module.exports = {
   readFile,
   writeFile,
   baseUrl,
+  ErrorHandler,
 };
