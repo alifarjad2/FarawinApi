@@ -41,11 +41,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log(
-    "Server is running!\nAPI documentation: http://localhost:3000/doc"
-  );
-});
+// app.listen(3000, () => {
+//   console.log(
+//     "Server is running!\nAPI documentation: http://localhost:3000/doc"
+//   );
+// });
 
 app.listen(443, () => {
   console.log(
@@ -53,8 +53,8 @@ app.listen(443, () => {
   );
 });
 
-app.listen(80, () => {
-  console.log(
-    "Server is running!\nAPI documentation: http://localhost:3000/doc"
-  );
-});
+// app.listen(80, () => {
+//   console.log(
+//     "Server is running!\nAPI documentation: http://localhost:3000/doc"
+//   );
+// });

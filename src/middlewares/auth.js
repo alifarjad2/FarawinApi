@@ -6,7 +6,6 @@ const baseUrl = __dirname + "/";
 const userFileName = "users.json";
 const contactFileName = "contacts.json";
 const fetch = require("node-fetch");
-const AWS = require("aws-sdk");
 
 const config = {
   endpoint: process.env.LIARA_ENDPOINT,
@@ -15,16 +14,30 @@ const config = {
   region: "default",
 };
 
-const client = new AWS.S3(config);
+const getClient = () => {
+  const AWS = require("aws-sdk");
+  const client = new AWS.S3(config);
+  return client;
+};
 
-const readFile = async (fileName) => {
+const Caches = {};
+const readFile = async (fileName, useCache) => {
   try {
-    const object = await client
+    if (true || fileName !== "chats.json") {
+      const c = Caches[fileName];
+      if (c) return c;
+    }
+
+    const object = await getClient()
       .getObject({
         Bucket: process.env.LIARA_BUCKET_NAME,
         Key: fileName,
       })
       .promise();
+
+    if (true || fileName !== "chats.json") {
+      return (Caches[fileName] = JSON.parse(object.Body?.toString() || "[]"));
+    }
     return JSON.parse(object.Body?.toString() || "[]");
   } catch (error) {
     console.log(error);
@@ -35,7 +48,11 @@ const readFile = async (fileName) => {
 
 const writeFile = async (fileName, data) => {
   try {
-    const object = await client
+    if (true || fileName !== "chats.json") {
+      Caches[fileName] = typeof data !== "string" ? data : JSON.parse(data);
+    }
+
+    const object = await getClient()
       .putObject({
         Body: typeof data === "string" ? data : JSON.stringify(data),
         Bucket: process.env.LIARA_BUCKET_NAME,
@@ -78,6 +95,13 @@ const getUser = async (username) => {
 
 const authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization;
+
+  if (req.method == "GET") {
+    res.set("Cache-control", `public, max-age=${3}`);
+  } else {
+    // for the other requests set strict no caching parameters
+    res.set("Cache-control", `no-store`);
+  }
 
   if (authHeader) {
     const token = authHeader.split(" ")[1] || authHeader;
@@ -173,4 +197,5 @@ module.exports = {
   writeFile,
   baseUrl,
   ErrorHandler,
+  Caches,
 };

@@ -9,6 +9,7 @@ const {
   writeFile,
   readFile,
   ErrorHandler,
+  getUser,
 } = require("../middlewares/auth");
 
 const fileName = "contacts.json";
@@ -64,6 +65,13 @@ router.route("/contact").post(
       return res.status(400).json({
         code: "400",
         message: " نام و نام‌خانوداگی باید حداقل 3 کرکتر باشد!",
+      });
+
+    const findUser = await getUser(username);
+    if (!findUser)
+      return res.status(404).json({
+        code: "404",
+        message: "مخاطب شما هنوز ثبت نام نکرده است!",
       });
 
     const contactList = await readFile(fileName);

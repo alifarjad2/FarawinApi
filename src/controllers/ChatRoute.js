@@ -316,6 +316,34 @@ router.route("/chat").put(
   })
 );
 
+router.route("/chat/:contactUsername").get(
+  authenticate,
+  ErrorHandler(async (req, res, next) => {
+    /*  
+    #swagger.tags = ['Chat']
+    #swagger.summary = 'گرفتن تمام چت‌های مخاطب' */
+
+    if (!req.params.contactUsername)
+      return res.status(400).json({
+        code: "400",
+        message: "شماره مخاطب لازم می باشد!",
+        errorField: "contactUsername",
+      });
+
+    const sender = req.user.id;
+    const receiver = req.params.contactUsername;
+
+    const chatList = await readFile(fileName);
+    return res.status(200).json({
+      code: "200",
+      message: "با موفقیت دریافت شد.",
+      chatList: chatList.filter(
+        (c) => c.receiver === receiver && c.sender === sender
+      ),
+    });
+  })
+);
+
 router.route("/chat").get(
   authenticate,
   ErrorHandler(async (req, res, next) => {
