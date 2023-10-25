@@ -10,6 +10,7 @@ const {
   readFile,
   ErrorHandler,
   getUser,
+  getWsClient,
 } = require("../middlewares/auth");
 
 const fileName = "contacts.json";

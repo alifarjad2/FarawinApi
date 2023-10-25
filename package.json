@@ -32,6 +32,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.2.0",
     "express": "^4.17.1",
+    "express-ws": "^5.0.2",
     "html-to-text": "^9.0.5",
     "node-fetch": "^2.6.11",
     "swagger-autogen": "^2.23.1",

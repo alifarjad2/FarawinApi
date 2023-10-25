@@ -10,6 +10,7 @@ const {
   writeFile,
   readFile,
   ErrorHandler,
+  getWsClient,
 } = require("../middlewares/auth");
 
 const fileName = "chats.json";
@@ -106,6 +107,7 @@ router.route("/chat").post(
         `to: ${username}\nfrom:${user.username}\n\n${convert(textHtml)}`
     );
 
+    getWsClient(username)?.send(JSON.stringify(chat));
     return res.status(200).json({
       code: "200",
       message: "پیام با موفقیت ارسال شد.",

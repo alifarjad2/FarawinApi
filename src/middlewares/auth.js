@@ -1,4 +1,5 @@
 var querystring = require("querystring");
+const wsInstance = require("../index");
 
 const baseUrl = __dirname + "/";
 // const baseUrl = "/tmp/" ;
@@ -107,7 +108,7 @@ const authenticate = async (req, res, next) => {
     const token = authHeader.split(" ")[1] || authHeader;
 
     try {
-      const userToken = JSON.parse(atob(token));
+      const userToken = JSON.parse(decodeURIComponent(atob(token)));
       const user = await getUser(userToken?.username);
       if (!user) {
         return res.status(403).json({
@@ -188,6 +189,10 @@ const ErrorHandler = (func) => async (req, res, next) => {
   }
 };
 
+const getWsClient = (username) => {
+  const clients = Array.from(wsInstance.getWss().clients);
+  return clients.filter((c) => (c.username = username)).slice(-1)[0];
+};
 module.exports = {
   sendToEita,
   authenticate,
@@ -198,4 +203,5 @@ module.exports = {
   baseUrl,
   ErrorHandler,
   Caches,
+  getWsClient,
 };

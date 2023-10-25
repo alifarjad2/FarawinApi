@@ -161,7 +161,7 @@ router.route("/user/login").post(
       code: "200",
       message: user.name + " " + "خوش آمدید.",
       user,
-      token: btoa(JSON.stringify(user)),
+      token: btoa(encodeURIComponent(JSON.stringify(user))),
     });
   })
 );
